@@ -1,0 +1,173 @@
+System Setup For Linux
+
+    • Prerequisites:
+        ◦ Ubuntu OS
+    • Setup Java7 and Java8
+        ◦ Download oracle java 7 from this link: https://www.oracle.com/technetwork/java/javase/downloads/java-archive-downloads-javase7-521261.html
+        ◦ Download oracle java 8 from this link: https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+        ◦  Extract the folders from the tar files downloaded and do the following:
+            ▪ move the folders to usr/local/java
+            ▪ add these to the ~/.bashrc file
+                • export JAVA_HOME=/usr/local/java/jdk1.7.0_80
+                • export JAVA_HOME=/usr/local/java/jdk1.8.0_231
+                • export PATH=$JAVA_HOME/bin:$PATH
+            ▪ Save bashrc file and source it using : source ~/.bashrc.
+        ◦ Verify installation by using commands javac and java -version.
+
+    • Setup Gradle
+        ◦ Download gradle 4.10.2 using this command: 
+          wget https://services.gradle.org/distributions/gradle-4.10.2-bin.zip
+        ◦ unzip the download in opt/gradle and add/update the following lines in bashrc
+            ▪ export GRADLE_HOME=/opt/gradle/gradle-4.10.2
+            ▪ export PATH=$JAVA_HOME/bin:$GRADLE_HOME/bin:$PATH
+        ◦ Verify installation by using command gradle -v
+      
+    • Setup Git:
+        ◦ Download git using this command: sudo apt install git
+
+    • Setup Eclipse
+        ◦ Download eclipse from this link: https://www.eclipse.org/downloads/packages
+        ◦ Add this to your eclipse.ini file after extraction:
+            ▪ -vm /usr/local/java/jdk1.8.0_241/jre/bin
+
+    • Setup Postgres And PGAdmin
+        ◦ Download postgres using the following commands: 
+            ▪ sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
+            ▪ wget -q https://www.postgresql.org/media/keys/ACCC4CF8.asc -O - | sudo apt-key add -
+            ▪ sudo apt-get update
+            ▪ sudo apt-get upgrade 
+            ▪ sudo apt-get install postgresql-9.6
+            ▪ sudo apt-get install pgadmin3
+            ▪ Open /etc/postgresql/9.6/main/pg_hba_conf
+            ▪ This line:
+                  local   all             postgres                                peer
+              Should be:
+                  local   all             postgres                                md5
+            ▪ run command, sudo service postgresql restart.
+            ▪ sudo -u postgres psql
+            ▪ ALTER USER postgres PASSWORD 'postgres';
+            ▪ Open pgadmin and create a new connection with following properties:
+                • name : Server
+                • host: localhost
+                • port: 5432
+                • username : postgres
+                • password : postgres
+
+    • Setup Angular
+        ◦ Install nodejs and npm
+            ▪ Download nodejs and npm using the following command: sudo apt-get install nodejs
+            ▪ Check version of node using node -v and npm using npm -v
+            ▪ if npm is not installed use sudo apt install npm  and then check version
+            ▪ node version is 12.15.0 and npm is 6.13.4
+            ▪ If version mismatch , use following commands to update,
+                • sudo npm cache clean -f
+                • sudo npm install -g n
+                • sudo n stable
+
+        ◦ Install angular-cli 
+            ▪ Download angular-cli globally using the following command: 
+              sudo npm install -g @angular/cli@7.3.9
+            ▪ Check version using ng --version.
+
+    • Setup Apache Tomcat
+        ◦ Download apache tomcat version 7 from the following link http://tomcat.apache.org/download-70.cgi
+        ◦ untar it and do the following changes:
+            ▪ Add following line in webapps/ROOT/WEB-INF/web.xml
+                    <filter>
+                    <filter-name>CorsFilter</filter-name>
+                    <filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
+                  </filter>
+                  <filter-mapping>
+                    <filter-name>CorsFilter</filter-name>
+                    <url-pattern>*</url-pattern>
+                  </filter-mapping>
+                  <error-page>
+                      <error-code>404</error-code>
+                      <location>/index.html</location>
+                    </error-page>
+
+    • Setup Visual Studio Code
+        ◦ Download VS Code from the following :
+          https://code.visualstudio.com/download
+
+
+
+    • Setup ActiveMQ System:
+        ◦ Download activemq from the following:
+          https://activemq.apache.org/activemq-5111-release
+        ◦ untar the tar file,move to directory and run using,
+            ▪ ./bin/activemq start
+        ◦ stop using 
+            ▪ ./bin/activemq stop
+        ◦ Goto : localhost:8161 to see activemq UI
+        ◦ username: admin	password:admin
+
+    • Setup Kafka System:
+        ◦ Download binaries using the following command:
+              curl "https://www.apache.org/dist/kafka/2.1.1/kafka_2.11-2.1.1.tgz" -o ~/Downloads/kafka.tgz
+        ◦ Perform the following commands:
+            ▪ mkdir ~/kafka && cd ~/kafka
+            ▪ tar -xvzf ~/Downloads/kafka.tgz --strip 1
+            ▪ vi ~/kafka/config/server.properties and add the following:
+                  delete.topic.enable = true
+            ▪ sudo vi /etc/systemd/system/zookeeper.service and add the following:
+                  [Unit]
+                  Requires=network.target remote-fs.target
+                  After=network.target remote-fs.target
+                  
+                  [Service]
+                  Type=simple
+                  User=dikshit
+                  ExecStart=/home/dikshit/Downloads/kafka/bin/zookeeper-server-start.sh /home/dikshit/Downloads/kafka/config/zookeeper.properties
+                  ExecStop=/home/dikshit/Downloads/kafka/bin/zookeeper-server-stop.sh
+                  Restart=on-abnormal
+                  
+                  [Install]
+                  WantedBy=multi-user.target
+            ▪ sudo vi /etc/systemd/system/kafka.service and add the following:
+                  [Unit]
+                  Requires=zookeeper.service
+                  After=zookeeper.service
+                  
+                  [Service]
+                  Type=simple
+                  User=dikshit
+                  ExecStart=/bin/sh -c '/home/dikshit/Downloads/kafka/bin/kafka-server-start.sh /home/dikshit/Downloads/kafka/config/server.properties > /home/$
+                  ExecStop=/home/dikshit/Downloads/kafka/bin/kafka-server-stop.sh
+                  Restart=on-abnormal
+                  
+                  [Install]
+                  WantedBy=multi-user.target
+            ▪ Start kafka using , the following command:
+                • sudo systemctl start kafka
+            ▪ Check the following to ensure it has started,
+                • sudo journalctl -u kafka
+                  You must see this log :  kafka-ubuntu systemd[1]: Started kafka.service.
+                • Jps to see if kafka and quorumPeer are up.
+            ▪ Test the installation using the following:
+                • To Create Topic:
+                    ◦ ~/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic TutorialTopic
+                • To Run Producer:
+                    ◦ echo "Hello, World" | ~/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic TutorialTopic > /dev/null
+                • To Run Consumer:
+                    ◦ ~/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic TutorialTopic –from-beginning
+                • You should get Hello, World when you run the consumer.
+                  
+    • Setup Docker:
+        ◦ Run these following commands:
+            ▪ sudo apt-get update
+            ▪ sudo apt-get install 
+   		apt-transport-https \
+   		ca-certificates \
+   		curl \
+   		gnupg \
+    		lsb-release
+            ▪ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+            ▪ echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+              
+            ▪ sudo apt-get update
+            ▪  sudo apt-get install docker-ce docker-ce-cli containerd.io
+            ▪ 
+
+
+                  
